@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+// ignore: depend_on_referenced_packages
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 void main() {
   runApp(const MyApp());
@@ -20,8 +23,35 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
+
+  @override
+  // ignore: library_private_types_in_public_api
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  List<dynamic> matches = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchMatches();
+  }
+
+  Future<void> fetchMatches() async {
+    final response = await http.get(Uri.parse('http://localhost:3200/matches')); // Replace with your API URL
+    if (response.statusCode == 200) {
+      setState(() {
+        matches = json.decode(response.body);
+        isLoading = false;
+      });
+    } else {
+      throw Exception('Failed to load matches');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,160 +103,208 @@ class MyHomePage extends StatelessWidget {
         ),
       ),
       body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Table(
-              border: TableBorder.all(color: Colors.grey.shade400),
-              columnWidths: const {
-                0: FlexColumnWidth(),
-                1: FlexColumnWidth(),
-                2: FlexColumnWidth(),
-                3: FlexColumnWidth(),
-              },
-              children: [
-                TableRow(
-                  decoration: const BoxDecoration(
-                    color: Colors.black,
-                  ),
-                  children: [
-                    const TableCell(
-                      child: Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text(
-                          'Fixtures',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                    const TableCell(
-                      child: Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text(
-                          'Selection',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                    const TableCell(
-                      child: Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text(
-                          'League',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                    TableCell(
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          'Odds',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green[50],
-                            fontSize: 16,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                  ],
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Today's Football Accumulator Tips",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18.0,
                 ),
-                const TableRow(
-                  children: [
-                    TableCell(
-                        child: Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text('Croatia vs Poland'),
-                    )),
-                    TableCell(
-                        child: Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text('Total: Over 2 Goals'),
-                    )),
-                    TableCell(
-                        child: Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text('UEFA Nations League'),
-                    )),
-                    TableCell(
-                        child: Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text('1.45'),
-                    )),
-                  ],
-                ),
-                const TableRow(
-                  children: [
-                    TableCell(
-                        child: Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text('Row 2 A'),
-                    )),
-                    TableCell(
-                        child: Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text('Row 2 B'),
-                    )),
-                    TableCell(
-                        child: Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text('Row 2 C'),
-                    )),
-                    TableCell(
-                        child: Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text('Row 2 D'),
-                    )),
-                  ],
-                ),
-              ],
-            ),
-            const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Text(
-                "Football Accumulator Bet Explained\n\n"
-                "You might have seen or heard of someone who has won millions by just investing or betting a few thousand. "
-                "Have you ever wondered how that is possible? Well, this is possible through accumulator betting. "
-                "Here, we will give you all the information you need to know about accumulator bets and how accumulator betting works.\n\n"
-                "What is an accumulator bet?\n\n"
-                "An accumulator bet, also known as an “acca,” is a combination of multiple events where each event is multiplied with each other "
-                "to form a high-odd single bet. Unlike a single bet, an accumulator bet consists of at least two or more events.\n\n"
-                "How does an accumulator bet work?\n\n"
-                "Lets take a simple example to understand how an accumulator works. Suppose you have three football fixtures:\n\n"
-                "1. Chelsea vs Fulham\n"
-                "2. Barcelona vs Real Madrid\n"
-                "3. United vs City\n\n"
-                "Here are the odds for each event as given by a betting site:\n\n"
-                "- Chelsea to win vs Fulham @ 1.6\n"
-                "- Both teams to score in Barcelona vs Real Madrid @ 1.7\n"
-                "- Over 3.5 Goals in United vs City @ 1.8\n\n"
-                "If you combine all these events and form an accumulator bet, the total odds become 1.6 * 1.7 * 1.8, which equals 4.896.\n\n"
-                "So, if you place a bet of \$10 on this accumulator bet, you get a return of \$48.96 if the bet wins. "
-                "Remember that you need to win all three bets to win the accumulator bet.\n\n"
-                "Pros and Cons\n\n"
-                "Pros:\n\n"
-                "1. You can earn big even with a small amount due to the multiplication of odds.\n"
-                "2. Multiple events in an accumulator bet can make watching sports more exciting.\n\n"
-                "Cons:\n\n"
-                "1. Accumulator bets have a higher risk since all events must win to claim the payout.\n"
-                "2. Even if most of your selection wins, losing one selection spoils the entire bet.",
-                style: TextStyle(fontSize: 16.0),
               ),
-            ),
-          ],
+              const SizedBox(height: 16.0),
+              const Text(
+                "Football Accumulator Tips is the combination of several events where odds of each event is multiplied with each other to form a big odd. "
+                "Here we provide several accumulator tips updated daily.",
+                style: TextStyle(fontSize: 16.0),
+                textAlign: TextAlign.justify, // Aligns the content properly
+              ),
+              const SizedBox(height: 16.0),
+              if (isLoading)
+                const Center(child: CircularProgressIndicator())
+              else
+                Table(
+                  border: TableBorder.all(color: Colors.grey.shade400),
+                  columnWidths: const {
+                    0: FlexColumnWidth(),
+                    1: FlexColumnWidth(),
+                    2: FlexColumnWidth(),
+                    3: FlexColumnWidth(),
+                  },
+                  children: [
+                    const TableRow(
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                      ),
+                      children: [
+                        TableCell(
+                          child: Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text(
+                              'Fixtures',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                              textAlign: TextAlign.center, // Center-align table headers
+                            ),
+                          ),
+                        ),
+                        TableCell(
+                          child: Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text(
+                              'Selection',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                        TableCell(
+                          child: Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text(
+                              'League',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                        TableCell(
+                          child: Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text(
+                              'Odds',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    ...matches.map((match) {
+                      return TableRow(
+                        children: [
+                          TableCell(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(match['fixture'],
+                                  textAlign: TextAlign.center), // Center-align table data
+                            ),
+                          ),
+                          TableCell(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(match['selection'],
+                                  textAlign: TextAlign.center),
+                            ),
+                          ),
+                          TableCell(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(match['league'],
+                                  textAlign: TextAlign.center),
+                            ),
+                          ),
+                          TableCell(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(match['odds'].toString(),
+                                  textAlign: TextAlign.center),
+                            ),
+                          ),
+                        ],
+                      );
+                    }),
+                  ],
+                ),
+              const SizedBox(height: 16.0),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: RichText(
+                  text: const TextSpan(
+                    style: TextStyle(
+                      fontSize: 16.0,
+                      color: Colors.black, // Default text color
+                    ),
+                    children: <TextSpan>[
+                      TextSpan(
+                        text: "Football Accumulator Bet Explained\n\n",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold), // Bold for heading
+                      ),
+                      TextSpan(
+                        text:
+                            "You might have seen or heard of someone who has won millions by just investing or betting a few thousand. "
+                            "Have you ever wondered how that is possible? Well, this is possible through accumulator betting. "
+                            "Here, we will give you all the information you need to know about accumulator bets and how accumulator betting works.\n\n",
+                        style: TextStyle(),
+                        // Apply justified alignment for paragraphs
+                      ),
+                      TextSpan(
+                        text: "What is an accumulator bet?\n\n",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold), // Bold for heading
+                      ),
+                      TextSpan(
+                        text:
+                            "An accumulator bet, also known as an “acca,” is a combination of multiple events where each event is multiplied with each other "
+                            "to form a high-odd single bet. Unlike a single bet, an accumulator bet consists of at least two or more events.\n\n",
+                        style: TextStyle(),
+                        // Apply justified alignment for paragraphs
+                      ),
+                      TextSpan(
+                        text: "How does an accumulator bet work?\n\n",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold), // Bold for heading
+                      ),
+                      TextSpan(
+                        text:
+                            "Lets take a simple example to understand how an accumulator works. Suppose you have three football fixtures:\n\n"
+                            "1. Chelsea vs Fulham\n"
+                            "2. Barcelona vs Real Madrid\n"
+                            "3. United vs City\n\n"
+                            "Here are the odds for each event as given by a betting site:\n\n"
+                            "- Chelsea to win vs Fulham @ 1.6\n"
+                            "- Both teams to score in Barcelona vs Real Madrid @ 1.7\n"
+                            "- Over 3.5 Goals in United vs City @ 1.8\n\n"
+                            "If you combine all these events and form an accumulator bet, the total odds become 1.6 * 1.7 * 1.8, which equals 4.896.\n\n"
+                            "So, if you place a bet of \$10 on this accumulator bet, you get a return of \$48.96 if the bet wins. "
+                            "Remember that you need to win all three bets to win the accumulator bet.\n\n",
+                        style: TextStyle(),
+                        // Apply justified alignment for paragraphs
+                      ),
+                      TextSpan(
+                        text: "Pros and Cons\n\n",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold), // Bold for heading
+                      ),
+                      TextSpan(
+                        text:
+                            "Accumulator bets offer high rewards but are riskier as you need all your selections to win for the bet to succeed. "
+                            "The more selections you add, the higher the risk, but also the higher the reward.",
+                        style: TextStyle(),
+                        // Apply justified alignment for paragraphs
+                      ),
+                    ],
+                  ),
+                  textAlign: TextAlign.justify, // Justifies all RichText content
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
