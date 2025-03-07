@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-// ignore: depend_on_referenced_packages
 import 'package:http/http.dart' as http;
+import 'package:todayfootballprediction/features/bookmarkers/bookmarker_page.dart';
+import 'package:todayfootballprediction/features/teams_to_win_today/ten_teams_win_page.dart';
 import 'dart:convert';
+import 'package:todayfootballprediction/features/today_football_accumulator_tips/accumulator_tips_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,8 +19,50 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        fontFamily: 'Roboto',
       ),
-      home: const MyHomePage(),
+      home: const SplashScreen(),
+    );
+  }
+}
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _navigateToHome();
+  }
+
+ _navigateToHome() async {
+  await Future.delayed(const Duration(seconds: 5), () {}); // Delay for 5 seconds
+
+  if (mounted) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const MyHomePage()),
+    );
+  }
+}
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+      body: Center(
+        child: Image.asset(
+          'assets/logo.png', // Make sure to place your logo image here
+          width: 200,
+          height: 200,
+        ),
+      ),
     );
   }
 }
@@ -42,14 +86,19 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> fetchMatches() async {
-    final response = await http.get(Uri.parse('http://localhost:3200/matches')); // Replace with your API URL
-    if (response.statusCode == 200) {
-      setState(() {
-        matches = json.decode(response.body);
-        isLoading = false;
-      });
-    } else {
-      throw Exception('Failed to load matches');
+    try {
+      final response = await http.get(Uri.parse('https://footballbackend.vercel.app/matches'));
+      if (response.statusCode == 200) {
+        setState(() {
+          matches = json.decode(response.body);
+          isLoading = false;
+        });
+      } else {
+        throw Exception('Failed to load matches');
+      }
+    } catch (error) {
+      // Log the error for debugging purposes
+      // print('Error fetching matches: $error');
     }
   }
 
@@ -57,51 +106,33 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Today Football Prediction'),
-      ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue,
-              ),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.blue, Colors.lightBlueAccent],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        title: const Row(
+          children: [
+            SizedBox(width: 10),
+            Expanded(
               child: Text(
                 'Today Football Prediction',
                 style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.bold,
+                  overflow: TextOverflow.ellipsis,
                 ),
+                maxLines: 1,
               ),
-            ),
-            ListTile(
-              title: const Text('Home'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: const Text('Today Football Accumulator Tips'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: const Text('10 Teams To WIN Today'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: const Text('BookMarker'),
-              onTap: () {
-                Navigator.pop(context);
-              },
             ),
           ],
         ),
       ),
+      drawer: _buildDrawer(),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -112,201 +143,237 @@ class _MyHomePageState extends State<MyHomePage> {
                 "Today's Football Accumulator Tips",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 18.0,
+                  fontSize: 24.0,
+                  color: Colors.blueAccent,
                 ),
               ),
               const SizedBox(height: 16.0),
               const Text(
-                "Football Accumulator Tips is the combination of several events where odds of each event is multiplied with each other to form a big odd. "
-                "Here we provide several accumulator tips updated daily.",
-                style: TextStyle(fontSize: 16.0),
-                textAlign: TextAlign.justify, // Aligns the content properly
+                "Football Accumulator Tips is the combination of several events where odds of each event is multiplied to form a big odd. We provide several accumulator tips updated daily.",
+                style: TextStyle(fontSize: 16.0, height: 1.5),
+                textAlign: TextAlign.justify,
               ),
               const SizedBox(height: 16.0),
               if (isLoading)
                 const Center(child: CircularProgressIndicator())
               else
-                Table(
-                  border: TableBorder.all(color: Colors.grey.shade400),
-                  columnWidths: const {
-                    0: FlexColumnWidth(),
-                    1: FlexColumnWidth(),
-                    2: FlexColumnWidth(),
-                    3: FlexColumnWidth(),
-                  },
-                  children: [
-                    const TableRow(
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                      ),
-                      children: [
-                        TableCell(
-                          child: Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text(
-                              'Fixtures',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                              textAlign: TextAlign.center, // Center-align table headers
-                            ),
-                          ),
-                        ),
-                        TableCell(
-                          child: Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text(
-                              'Selection',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                        TableCell(
-                          child: Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text(
-                              'League',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                        TableCell(
-                          child: Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text(
-                              'Odds',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    ...matches.map((match) {
-                      return TableRow(
-                        children: [
-                          TableCell(
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(match['fixture'],
-                                  textAlign: TextAlign.center), // Center-align table data
-                            ),
-                          ),
-                          TableCell(
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(match['selection'],
-                                  textAlign: TextAlign.center),
-                            ),
-                          ),
-                          TableCell(
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(match['league'],
-                                  textAlign: TextAlign.center),
-                            ),
-                          ),
-                          TableCell(
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(match['odds'].toString(),
-                                  textAlign: TextAlign.center),
-                            ),
-                          ),
-                        ],
-                      );
-                    }),
-                  ],
-                ),
+                _buildMatchTable(),
               const SizedBox(height: 16.0),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: RichText(
-                  text: const TextSpan(
-                    style: TextStyle(
-                      fontSize: 16.0,
-                      color: Colors.black, // Default text color
-                    ),
-                    children: <TextSpan>[
-                      TextSpan(
-                        text: "Football Accumulator Bet Explained\n\n",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold), // Bold for heading
-                      ),
-                      TextSpan(
-                        text:
-                            "You might have seen or heard of someone who has won millions by just investing or betting a few thousand. "
-                            "Have you ever wondered how that is possible? Well, this is possible through accumulator betting. "
-                            "Here, we will give you all the information you need to know about accumulator bets and how accumulator betting works.\n\n",
-                        style: TextStyle(),
-                        // Apply justified alignment for paragraphs
-                      ),
-                      TextSpan(
-                        text: "What is an accumulator bet?\n\n",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold), // Bold for heading
-                      ),
-                      TextSpan(
-                        text:
-                            "An accumulator bet, also known as an “acca,” is a combination of multiple events where each event is multiplied with each other "
-                            "to form a high-odd single bet. Unlike a single bet, an accumulator bet consists of at least two or more events.\n\n",
-                        style: TextStyle(),
-                        // Apply justified alignment for paragraphs
-                      ),
-                      TextSpan(
-                        text: "How does an accumulator bet work?\n\n",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold), // Bold for heading
-                      ),
-                      TextSpan(
-                        text:
-                            "Lets take a simple example to understand how an accumulator works. Suppose you have three football fixtures:\n\n"
-                            "1. Chelsea vs Fulham\n"
-                            "2. Barcelona vs Real Madrid\n"
-                            "3. United vs City\n\n"
-                            "Here are the odds for each event as given by a betting site:\n\n"
-                            "- Chelsea to win vs Fulham @ 1.6\n"
-                            "- Both teams to score in Barcelona vs Real Madrid @ 1.7\n"
-                            "- Over 3.5 Goals in United vs City @ 1.8\n\n"
-                            "If you combine all these events and form an accumulator bet, the total odds become 1.6 * 1.7 * 1.8, which equals 4.896.\n\n"
-                            "So, if you place a bet of \$10 on this accumulator bet, you get a return of \$48.96 if the bet wins. "
-                            "Remember that you need to win all three bets to win the accumulator bet.\n\n",
-                        style: TextStyle(),
-                        // Apply justified alignment for paragraphs
-                      ),
-                      TextSpan(
-                        text: "Pros and Cons\n\n",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold), // Bold for heading
-                      ),
-                      TextSpan(
-                        text:
-                            "Accumulator bets offer high rewards but are riskier as you need all your selections to win for the bet to succeed. "
-                            "The more selections you add, the higher the risk, but also the higher the reward.",
-                        style: TextStyle(),
-                        // Apply justified alignment for paragraphs
-                      ),
-                    ],
-                  ),
-                  textAlign: TextAlign.justify, // Justifies all RichText content
-                ),
-              ),
+              _buildAccumulatorInfo(),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Drawer _buildDrawer() {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.blue, Colors.lightBlueAccent],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: Row(
+              children: [
+                ClipOval(
+                  child: Image.asset(
+                    'assets/logo.png',
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Today Football',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Prediction',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.home),
+            title: const Text('Home'),
+            onTap: () {
+              Navigator.pop(context);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.sports_soccer),
+            title: const Text('Today Football Accumulator Tips'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AccumulatorTipsPage()),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.group),
+            title: const Text('10 Teams To WIN Today'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const TenTeamsWinPage()),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.bookmark),
+            title: const Text('BookMarker'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const BookmarkerPage()),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Table _buildMatchTable() {
+    return Table(
+      border: TableBorder.all(color: Colors.grey.shade300, width: 1.5),
+      columnWidths: const {
+        0: FlexColumnWidth(),
+        1: FlexColumnWidth(),
+        2: FlexColumnWidth(),
+        3: FlexColumnWidth(),
+      },
+      children: [
+        const TableRow(
+          decoration: BoxDecoration(color: Colors.blueAccent),
+          children: [
+            Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Text(
+                'Fixtures',
+                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Text(
+                'Selection',
+                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Text(
+                'League',
+                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Text(
+                'Odds',
+                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ),
+        ...matches.map((match) {
+          return TableRow(
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+            ),
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(match['fixture'], textAlign: TextAlign.center),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(match['selection'], textAlign: TextAlign.center),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(match['league'], textAlign: TextAlign.center),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(match['odds'].toString(), textAlign: TextAlign.center),
+              ),
+            ],
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _buildAccumulatorInfo() {
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "What is a Football Accumulator?",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 18.0,
+            color: Colors.blueAccent,
+          ),
+        ),
+        SizedBox(height: 8.0),
+        Text(
+          "Football Accumulator is a bet combining multiple selections into one bet. The odds of each event are multiplied to create a larger odd, resulting in bigger potential returns.",
+          style: TextStyle(fontSize: 16.0, height: 1.5),
+          textAlign: TextAlign.justify,
+        ),
+        SizedBox(height: 16.0),
+        Text(
+          "Accumulator Tips Example:",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 18.0,
+            color: Colors.blueAccent,
+          ),
+        ),
+        SizedBox(height: 8.0),
+        Text(
+          "Event 1: Team A to WIN\nEvent 2: Over 2.5 goals in Match B\nEvent 3: Team C to WIN\nTotal odds: 6.00",
+          style: TextStyle(fontSize: 16.0, height: 1.5),
+          textAlign: TextAlign.justify,
+        ),
+      ],
     );
   }
 }
